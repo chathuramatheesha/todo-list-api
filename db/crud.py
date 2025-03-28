@@ -72,7 +72,7 @@ async def update_task(request: TaskUpdate, task_id: int, db: AsyncSession) -> Ta
     return result
 
 
-async def delete_task(task_id: int, db: AsyncSession) -> str:
+async def delete_task(task_id: int, db: AsyncSession) -> dict:
     result = await db.execute(delete(Task).where(Task.id == task_id))
     await db.commit()
 
@@ -82,4 +82,4 @@ async def delete_task(task_id: int, db: AsyncSession) -> str:
             detail=f"Task deletion failed: Task with id {task_id} not found",
         )
 
-    return "ok"
+    return {"status": "ok", "message": "Task deleted successfully"}
