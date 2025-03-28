@@ -4,3 +4,6 @@ pydantic==2.11.0
 pydantic-settings==2.8.1
 SQLAlchemy==2.0.40
 aiosqlite==0.21.0
+bcrypt==4.3.0
+passlib==1.7.4
+python-jose==3.4.0

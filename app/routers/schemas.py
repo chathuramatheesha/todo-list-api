@@ -19,3 +19,21 @@ class TaskUpdate(BaseModel):
     description: str | None = None
     is_complete: bool | None = None
     due_date: datetime | None = None
+
+
+class UserBase(BaseModel):
+    fullname: str
+    email: str
+
+
+class UserOut(UserBase):
+    is_active: bool
+    model_config = ConfigDict(from_attributes=True)
+
+    @property
+    def first_name(self) -> str:
+        return self.fullname.split(" ")[0]
+
+
+class UserWithTasks(UserOut):
+    tasks: list[TaskOut]
