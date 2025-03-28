@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.hash import bcrypt
-from jose import jwt
+from jose import jwt, ExpiredSignatureError, JWTError
 from datetime import datetime, timedelta, timezone
 
 from app.config import config
@@ -43,3 +43,22 @@ def create_access_token(email: str) -> str:
     )
 
     return encoded_jwt
+
+
+def get_decode_jwt_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(
+            token, key=config.SECRET_KEY, algorithms=[config.ALGORITHM]
+        )
+
+    except ExpiredSignatureError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from e
+
+    except JWTError as e:
+        raise credentials_exception from e
+
+    return payload
