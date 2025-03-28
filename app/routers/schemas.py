@@ -26,6 +26,10 @@ class UserBase(BaseModel):
     email: str
 
 
+class UserIn(BaseModel):
+    password: str
+
+
 class UserOut(UserBase):
     is_active: bool
     model_config = ConfigDict(from_attributes=True)
