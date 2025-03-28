@@ -26,7 +26,7 @@ class UserBase(BaseModel):
     email: str
 
 
-class UserIn(BaseModel):
+class UserIn(UserBase):
     password: str
 
 

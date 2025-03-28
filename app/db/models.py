@@ -35,7 +35,7 @@ class Task(Base):
         DateTime, nullable=False, default=datetime.now(timezone.utc)
     )
     due_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("userrs.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped["User"] = relationship("User", back_populates="tasks")
 
     def __repr__(self):

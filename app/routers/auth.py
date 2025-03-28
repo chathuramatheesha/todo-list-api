@@ -1,41 +1,33 @@
-from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 
-from app.crud import user_crud as crud
 from app.db.database import get_db
-from app.db.models import User
-from app.security import Hash, credentials_exception, get_decode_jwt_token
+from app.routers.schemas import UserIn, UserOut
+from app.crud import user_crud as crud
 
-oath2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-async def authenticate_user(email: str, password: str, db: AsyncSession) -> User:
-    user = await crud.get_user_by_email(email, db)
-
-    if not user:
-        raise credentials_exception
-
-    if not Hash.verify_password(password, user.password):
-        raise credentials_exception
-
-    return user
+router = APIRouter()
+db_dependency: AsyncSession = Depends(get_db)
 
 
-async def get_current_user(
-    token: Annotated[str, Depends(oath2_scheme)],
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    data = get_decode_jwt_token(token)
-    email = data.get("email")
+@router.patch(
+    "/register",
+    response_model=UserOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def register(user: UserIn, db=db_dependency):
+    return await crud.create_user(user, db)
 
-    if not email:
-        raise credentials_exception
 
-    user = await crud.get_user_by_email(email, db)
-
-    if not user:
-        raise credentials_exception
-
-    return user
+@router.post("/token")
+async def login(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db=db_dependency
+):
+    user = await crud.authenticate_user(
+        email=form_data.username,
+        password=form_data.password,
+        db=db,
+    )
+    access_token = crud.create_access_token(user.email)
+    return {"access_token": access_token, "token_type": "bearer"}
