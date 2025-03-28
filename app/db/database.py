@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-from config import config
+from app.config import config
 
 
 class Base(AsyncAttrs, DeclarativeBase):

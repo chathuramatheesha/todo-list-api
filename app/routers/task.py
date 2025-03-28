@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import crud
-from db.database import get_db
-from routers.schemas import TaskBase, TaskOut, TaskUpdate
+from app.db import crud
+from app.db.database import get_db
+from app.routers.schemas import TaskBase, TaskOut, TaskUpdate
 
 router = APIRouter()
 db_dependency = Depends(get_db)

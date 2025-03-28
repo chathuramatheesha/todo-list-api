@@ -39,6 +39,11 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
    pip install -r requirements.txt
    ```
 
+4. Run Fastapi Application:
+   ```bash
+   uvicorn app.main:app
+   ```
+
 # API Endpoints
 
 ## 1. **Create Task**

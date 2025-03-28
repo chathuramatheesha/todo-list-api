@@ -3,8 +3,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete, asc, case
 
-from db.models import Task
-from routers.schemas import TaskBase, TaskUpdate
+from app.db.models import Task
+from app.routers.schemas import TaskBase, TaskUpdate
 
 
 async def create_task(request: TaskBase, db: AsyncSession) -> Task:
