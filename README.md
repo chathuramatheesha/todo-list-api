@@ -20,7 +20,7 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/todo-list-api.git
+   git clone https://github.com/chathuramatheesha/todo-list-api.git
    cd todo-list-api
 
 2. Set up a virtual environment and activate it:
