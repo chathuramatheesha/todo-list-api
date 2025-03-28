@@ -29,6 +29,8 @@ data.db
 *~
 .*.sw?
 .cache
+private_key.pem
+public_key.pem
 
 # macOS
 .DS_Store

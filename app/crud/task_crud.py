@@ -3,14 +3,14 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete, asc, case
 
-from app.db.models import Task
+from app.db.models import Task, User
 from app.routers.schemas import TaskBase, TaskUpdate
 
 
-async def create_task(request: TaskBase, db: AsyncSession) -> Task:
+async def create_task(request: TaskBase, user: User, db: AsyncSession) -> Task:
     inserted_task = await db.scalar(
         insert(Task)
-        .values(**request.model_dump())
+        .values(**request.model_dump(), user_id=user.id)
         .returning(Task)  # Return inserted row
     )
     await db.commit()
@@ -24,7 +24,7 @@ async def create_task(request: TaskBase, db: AsyncSession) -> Task:
     return inserted_task
 
 
-async def get_task(task_id: int, db: AsyncSession) -> Task:
+async def get_task(task_id: int, user: User, db: AsyncSession) -> Task:
     task = await db.scalar(select(Task).where(Task.id == task_id))
 
     if not task:
@@ -33,12 +33,20 @@ async def get_task(task_id: int, db: AsyncSession) -> Task:
             detail=f"Task selection failed: Task with id {task_id} not found",
         )
 
+    if task.user_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Task selection failed: Permission to access this task denied",
+        )
+
     return task
 
 
-async def get_tasks(db: AsyncSession) -> Sequence[Task]:
+async def get_tasks(user: User, db: AsyncSession) -> Sequence[Task]:
     results = await db.scalars(
-        select(Task).order_by(
+        select(Task)
+        .where(Task.user_id == user.id)
+        .order_by(
             case((Task.is_complete == True, 1), else_=0),
             asc(Task.due_date),  # Order by due_date in ascending order
         )
@@ -54,7 +62,10 @@ async def get_tasks(db: AsyncSession) -> Sequence[Task]:
     return tasks
 
 
-async def update_task(request: TaskUpdate, task_id: int, db: AsyncSession) -> Task:
+async def update_task(
+    request: TaskUpdate, task_id: int, user: User, db: AsyncSession
+) -> Task:
+    await get_task(task_id, user, db)
     result = await db.scalar(
         update(Task)
         .where(Task.id == task_id)
@@ -72,7 +83,8 @@ async def update_task(request: TaskUpdate, task_id: int, db: AsyncSession) -> Ta
     return result
 
 
-async def delete_task(task_id: int, db: AsyncSession) -> dict:
+async def delete_task(task_id: int, user: User, db: AsyncSession) -> dict:
+    await get_task(task_id, user, db)
     result = await db.execute(delete(Task).where(Task.id == task_id))
     await db.commit()
 

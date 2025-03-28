@@ -22,7 +22,8 @@ async def register(user: UserIn, db=db_dependency):
 
 @router.post("/token")
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db=db_dependency
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db=db_dependency,
 ):
     user = await crud.authenticate_user(
         email=form_data.username,
