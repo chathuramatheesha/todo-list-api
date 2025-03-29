@@ -7,6 +7,12 @@ from datetime import datetime, timezone
 from app.db.database import Base
 
 
+class TaskPriority(enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(
@@ -30,6 +36,7 @@ class Task(Base):
     )
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
+    priority: Mapped[enum.Enum] = mapped_column(Enum(TaskPriority), nullable=False)
     is_complete: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now(timezone.utc)
