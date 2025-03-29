@@ -1,9 +1,10 @@
 from typing import Sequence
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import insert, select, update, delete, asc, case
+from sqlalchemy import insert, select, update, delete, asc, case, desc
 
-from app.db.models import Task, User, TaskPriority
+from app.db.models import Task, User
+from app.core.enums import TaskPriority, TaskSortBy, TaskOrder
 from app.routers.schemas import TaskBase, TaskUpdate
 
 
@@ -45,19 +46,47 @@ async def get_task(task_id: int, user: User, db: AsyncSession) -> Task:
 async def get_tasks(
     filter_status: bool,
     filter_priority: TaskPriority,
+    sort_by: TaskSortBy,
+    order: TaskOrder,
     user: User,
     db: AsyncSession,
 ) -> Sequence[Task]:
     query = select(Task).where(Task.user_id == user.id)
+    order_func = desc if order == TaskOrder.desc else asc
 
-    if filter_status:
+    if filter_status is not None:
         query = query.filter(Task.is_complete == filter_status)
 
     if filter_priority:
-        query = query.filter(Task.priority == filter_priority)
+        query = query.filter(Task.priority == filter_priority.value)
+
+    if sort_by:
+        match sort_by:
+            case TaskSortBy.status:
+                query = query.order_by(case((Task.is_complete == True, 1), else_=0))
+
+            case TaskSortBy.priority:
+                query = query.order_by(
+                    case(
+                        (Task.priority == TaskPriority.low.value, 0),
+                        (Task.priority == TaskPriority.medium.value, 1),
+                        (Task.priority == TaskPriority.high.value, 2),
+                        else_=3,
+                    )
+                )
+
+            case _:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Tasks sorting failed: accepted values are {', '.join(TaskSortBy)}",
+                )
 
     query = query.order_by(
-        case((Task.is_complete == True, 1), else_=0), asc(Task.due_date)
+        order_func(
+            getattr(Task, "is_complete" if sort_by == TaskSortBy.status else sort_by)
+            if sort_by
+            else Task.due_date
+        )
     )
 
     tasks = await db.scalars(query)

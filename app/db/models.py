@@ -4,13 +4,8 @@ from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 
+from app.core.enums import TaskPriority
 from app.db.database import Base
-
-
-class TaskPriority(enum.Enum):
-    low = "low"
-    medium = "medium"
-    high = "high"
 
 
 class User(Base):

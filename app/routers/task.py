@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, status
 from fastapi.params import Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from enum import Enum
 
 from app.crud import task_crud as crud
 from app.db.database import get_db
-from app.db.models import User, TaskPriority
+from app.db.models import User
+from app.core.enums import TaskPriority, TaskSortBy, TaskOrder
 from app.routers.schemas import TaskBase, TaskOut, TaskUpdate
 from app.crud.user_crud import get_current_user
 
@@ -35,10 +35,22 @@ async def get_tasks(
     ),
     filter_priority: TaskPriority | None = Query(
         None,
-        description="Filter by priority (low, medium, high)",
+        description=f"Filter by priority ({', '.join(TaskPriority)})",
     ),
+    sort_by: TaskSortBy | None = Query(
+        None,
+        description=f"Sort by ({', '.join(TaskSortBy)})",
+    ),
+    order: TaskOrder | None = Query(None, description="Order by (asc, desc)"),
 ):
-    return await crud.get_tasks(filter_status, filter_priority, current_user, db)
+    return await crud.get_tasks(
+        filter_status=filter_status,
+        filter_priority=filter_priority,
+        sort_by=sort_by,
+        order=order,
+        user=current_user,
+        db=db,
+    )
 
 
 @router.get("/{task_id}", response_model=TaskOut)
