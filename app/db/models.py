@@ -22,9 +22,16 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="user")
+    tasks: Mapped[list["Task"]] = relationship(
+        "Task", back_populates="user", lazy="selectin"
+    )
 
-    def get_first_name(self) -> str:
+    @property
+    def tasks_length(self):
+        return len(self.tasks)
+
+    @property
+    def first_name(self) -> str:
         return self.fullname.split(" ")[0]
 
 

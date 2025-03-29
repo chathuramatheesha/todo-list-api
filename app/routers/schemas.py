@@ -5,6 +5,7 @@ from datetime import datetime
 class TaskBase(BaseModel):
     title: str
     description: str
+    priority: str
     due_date: datetime
 
 
@@ -32,11 +33,8 @@ class UserIn(UserBase):
 
 class UserOut(UserBase):
     is_active: bool
+    first_name: str
     model_config = ConfigDict(from_attributes=True)
-
-    @property
-    def first_name(self) -> str:
-        return self.fullname.split(" ")[0]
 
 
 class UserWithTasks(UserOut):

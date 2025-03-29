@@ -19,12 +19,19 @@ docs_build
 site_build
 venv
 docs.zip
+__pycache__/
+*.pyc
+*.pyo
 archive.zip
 .venv
 .venv/
 .env
 .env.local
+
+# sqlite
+dev.db
 data.db
+
 # vim temporary files
 *~
 .*.sw?
@@ -34,3 +41,9 @@ public_key.pem
 
 # macOS
 .DS_Store
+
+# Alembic
+alembic/versions/*.pyc
+alembic.ini
+alembic
+alembic/
