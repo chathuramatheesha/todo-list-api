@@ -12,7 +12,7 @@ from app.crud.user_crud import get_current_user
 
 router = APIRouter()
 
-# db_dependency: AsyncSession =
+# db_dependency: Annotated[AsyncSession, Depends(get_db)]
 # user_dependency: Annotated[User, Depends(get_current_user)]
 
 
@@ -29,6 +29,10 @@ async def create_task(
 async def get_tasks(
     current_user: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db),
+    search: str | None = Query(
+        None,
+        description="Search for tasks by matching keywords in the title or description.",
+    ),
     filter_status: bool | None = Query(
         None,
         description="Filter by status (true, false)",
@@ -41,9 +45,13 @@ async def get_tasks(
         None,
         description=f"Sort by ({', '.join(TaskSortBy)})",
     ),
-    order: TaskOrder | None = Query(None, description="Order by (asc, desc)"),
+    order: TaskOrder | None = Query(
+        None,
+        description="Order by (asc, desc)",
+    ),
 ):
     return await crud.get_tasks(
+        search=search,
         filter_status=filter_status,
         filter_priority=filter_priority,
         sort_by=sort_by,

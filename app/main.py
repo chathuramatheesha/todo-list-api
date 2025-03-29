@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 
 from app.db.database import init_db
@@ -17,3 +16,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth.router, tags=["User"])
 app.include_router(task.router, prefix="/tasks", tags=["Task"])
+
+# TODO - status(completed, pending, expired) -> Task model
+# TODO - search tasks -> search based oon task name or description
+# TODO - due date reminder

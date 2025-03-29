@@ -44,6 +44,7 @@ async def get_task(task_id: int, user: User, db: AsyncSession) -> Task:
 
 
 async def get_tasks(
+    search: str,
     filter_status: bool,
     filter_priority: TaskPriority,
     sort_by: TaskSortBy,
@@ -53,6 +54,11 @@ async def get_tasks(
 ) -> Sequence[Task]:
     query = select(Task).where(Task.user_id == user.id)
     order_func = desc if order == TaskOrder.desc else asc
+
+    if search:
+        query = query.filter(
+            (Task.title.ilike(f"%{search}%")) | (Task.description.ilike(f"%{search}%"))
+        )
 
     if filter_status is not None:
         query = query.filter(Task.is_complete == filter_status)
