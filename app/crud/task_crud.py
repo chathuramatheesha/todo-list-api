@@ -1,28 +1,12 @@
-from typing import Sequence
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete, asc, case, desc
+from typing import Sequence
+from datetime import datetime, timezone
 
 from app.db.models import Task, User
 from app.core.enums import TaskPriority, TaskSortBy, TaskOrder
 from app.routers.schemas import TaskBase, TaskUpdate
-
-
-async def create_task(request: TaskBase, user: User, db: AsyncSession) -> Task:
-    inserted_task = await db.scalar(
-        insert(Task)
-        .values(**request.model_dump(), user_id=user.id)
-        .returning(Task)  # Return inserted row
-    )
-    await db.commit()
-
-    if not inserted_task:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Task creation failed: Invalid input data",
-        )
-
-    return inserted_task
 
 
 async def get_task(task_id: int, user: User, db: AsyncSession) -> Task:
@@ -107,17 +91,37 @@ async def get_tasks(
     return tasks
 
 
+async def create_task(request: TaskBase, user: User, db: AsyncSession) -> Task:
+    result = await db.execute(
+        insert(Task).values(**request.model_dump(), user_id=user.id)
+        # .returning(Task)  # Return inserted row
+    )
+    await db.commit()
+
+    inserted_task = await get_task(result.inserted_primary_key[0], user, db)
+
+    if not inserted_task:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Task creation failed: Invalid input data",
+        )
+
+    return inserted_task
+
+
 async def update_task(
     request: TaskUpdate, task_id: int, user: User, db: AsyncSession
 ) -> Task:
     await get_task(task_id, user, db)
-    result = await db.scalar(
+    await db.execute(
         update(Task)
         .where(Task.id == task_id)
         .values(**request.model_dump(exclude_unset=True))
-        .returning(Task),  # Return updated task
+        # .returning(Task),  # Return updated task
     )
     await db.commit()
+
+    result = await get_task(task_id, user, db)
 
     if not result:
         raise HTTPException(

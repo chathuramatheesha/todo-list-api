@@ -7,7 +7,7 @@ from app.crud import task_crud as crud
 from app.db.database import get_db
 from app.db.models import User
 from app.core.enums import TaskPriority, TaskSortBy, TaskOrder
-from app.routers.schemas import TaskBase, TaskOut, TaskUpdate
+from app.routers.schemas import TaskBase, TaskOut, TaskUpdate, TaskListOut
 from app.crud.user_crud import get_current_user
 
 router = APIRouter()

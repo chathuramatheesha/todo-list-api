@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Enum
+from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 
@@ -13,17 +13,23 @@ class User(Base):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True
     )
-    fullname: Mapped[str] = mapped_column(String, nullable=False)
-    email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
-    password: Mapped[str] = mapped_column(String, nullable=False)
+    fullname: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True, index=True
+    )
+    password: Mapped[str] = mapped_column(String(60), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     tasks: Mapped[list["Task"]] = relationship(
         "Task", back_populates="user", lazy="selectin"
     )
 
     @property
-    def tasks_length(self):
+    def tasks_count(self):
         return len(self.tasks)
+
+    @property
+    def completed_task_count(self):
+        return len([task for task in self.tasks if task.is_complete])
 
     @property
     def first_name(self) -> str:
@@ -36,8 +42,8 @@ class Task(Base):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True, nullable=False
     )
-    title: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
     priority: Mapped[enum.Enum] = mapped_column(Enum(TaskPriority), nullable=False)
     is_complete: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(

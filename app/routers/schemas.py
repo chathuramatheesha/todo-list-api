@@ -1,5 +1,7 @@
-from pydantic import BaseModel, ConfigDict
-from datetime import datetime
+from fastapi import HTTPException, status
+from pydantic import BaseModel, ConfigDict, GetCoreSchemaHandler
+from pydantic_core import CoreSchema
+from datetime import datetime, timezone
 
 from app.db.models import TaskPriority
 
@@ -15,6 +17,11 @@ class TaskOut(TaskBase):
     id: int
     is_complete: bool
     model_config = ConfigDict(from_attributes=True)
+
+
+class TaskListOut(TaskOut):
+    tasks_length: int
+    completed_task_length: int
 
 
 class TaskUpdate(BaseModel):

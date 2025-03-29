@@ -37,8 +37,13 @@ async def create_user(request: UserIn, db: AsyncSession) -> User:
         **request.model_dump(),
         "password": Hash.get_hash_password(request.password),
     }
-    inserted_user = await db.scalar(insert(User).values(new_user).returning(User))
+
+    await db.execute(
+        insert(User).values(new_user)
+    )  # .returning(User)) # returning works on (sqlite, postgresql)
     await db.commit()
+
+    inserted_user = await get_user_by_email(request.email, db)
 
     if not inserted_user:
         raise HTTPException(
