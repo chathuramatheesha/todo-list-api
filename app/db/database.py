@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import inspect
 
 from app.config import config
 

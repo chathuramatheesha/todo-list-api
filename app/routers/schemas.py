@@ -1,11 +1,13 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
+from app.db.models import TaskPriority
+
 
 class TaskBase(BaseModel):
     title: str
     description: str
-    priority: str
+    priority: TaskPriority
     due_date: datetime
 
 

@@ -8,9 +8,9 @@ from app.db.database import Base
 
 
 class TaskPriority(enum.Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
+    low = "low"
+    medium = "medium"
+    high = "high"
 
 
 class User(Base):

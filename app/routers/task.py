@@ -1,11 +1,12 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, status
+from fastapi.params import Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated
+from enum import Enum
 
 from app.crud import task_crud as crud
 from app.db.database import get_db
-from app.db.models import User
+from app.db.models import User, TaskPriority
 from app.routers.schemas import TaskBase, TaskOut, TaskUpdate
 from app.crud.user_crud import get_current_user
 
@@ -28,8 +29,16 @@ async def create_task(
 async def get_tasks(
     current_user: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db),
+    filter_status: bool | None = Query(
+        None,
+        description="Filter by status (true, false)",
+    ),
+    filter_priority: TaskPriority | None = Query(
+        None,
+        description="Filter by priority (low, medium, high)",
+    ),
 ):
-    return await crud.get_tasks(current_user, db)
+    return await crud.get_tasks(filter_status, filter_priority, current_user, db)
 
 
 @router.get("/{task_id}", response_model=TaskOut)

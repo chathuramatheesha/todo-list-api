@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete, asc, case
 
-from app.db.models import Task, User
+from app.db.models import Task, User, TaskPriority
 from app.routers.schemas import TaskBase, TaskUpdate
 
 
@@ -42,16 +42,26 @@ async def get_task(task_id: int, user: User, db: AsyncSession) -> Task:
     return task
 
 
-async def get_tasks(user: User, db: AsyncSession) -> Sequence[Task]:
-    results = await db.scalars(
-        select(Task)
-        .where(Task.user_id == user.id)
-        .order_by(
-            case((Task.is_complete == True, 1), else_=0),
-            asc(Task.due_date),  # Order by due_date in ascending order
-        )
+async def get_tasks(
+    filter_status: bool,
+    filter_priority: TaskPriority,
+    user: User,
+    db: AsyncSession,
+) -> Sequence[Task]:
+    query = select(Task).where(Task.user_id == user.id)
+
+    if filter_status:
+        query = query.filter(Task.is_complete == filter_status)
+
+    if filter_priority:
+        query = query.filter(Task.priority == filter_priority)
+
+    query = query.order_by(
+        case((Task.is_complete == True, 1), else_=0), asc(Task.due_date)
     )
-    tasks = results.all()
+
+    tasks = await db.scalars(query)
+    tasks = tasks.all()
 
     if not tasks:
         raise HTTPException(
