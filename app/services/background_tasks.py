@@ -1,44 +1,17 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-from sqlalchemy import select
-from datetime import datetime, timezone
 
-from app.db.database import AsyncSessionLocal
-from app.db.models import Task
-from app.core.enums import TaskStatus
+from app.services.tasks_expire_service import tasks_expire_due_date
+from app.core.config import config
 
-
-# Function to expire tasks
-async def tasks_expire_due_date():
-    async with AsyncSessionLocal() as db:
-        # Get the current time
-        now = datetime.now(timezone.utc)
-
-        # Query for tasks whose due_date has passed and aren't expired yet
-        query = select(Task).where(
-            Task.due_date < now, Task.status != TaskStatus.expired
-        )
-
-        # Execute the query and fetch tasks that need to be expired
-        result = await db.scalars(query)
-        tasks_to_expire = result.all()
-
-        if not tasks_to_expire:
-            return
-
-        # Loop through tasks and update the status to expired
-        for task in tasks_to_expire:
-            task.status = TaskStatus.expired
-
-        # Commit changes to the database
-        await db.commit()
-
-
+# Create a scheduler instance for periodic task execution
 schedular = AsyncIOScheduler()
 
+# Add the 'tasks_expire_due_date' function to the scheduler to run at regular intervals
+# The job will run every minute (IntervalTrigger(1 hour))
 schedular.add_job(
-    tasks_expire_due_date,
-    IntervalTrigger(minutes=1),
-    id="expire_task_job",
-    replace_existing=True,
+    tasks_expire_due_date,  # Function to execute
+    IntervalTrigger(hours=config.TASKS_EXPIRE_INTERVAL_HOURS),  # Set interval to 1 hour
+    id="expire_task_job",  # Unique job ID for identification
+    replace_existing=True,  # Replace any existing job with the same ID
 )
