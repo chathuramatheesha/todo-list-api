@@ -8,67 +8,74 @@ from app.core.enums import TaskStatus
 from app.db.models import TaskPriority
 
 
+# TASK-BASED SCHEMAS
+# Basic task model with title, description, priority, and due date
 class TaskBase(BaseModel):
-    title: str = Field(min_length=5)
-    description: str
-    priority: TaskPriority
-    due_date: datetime
+    title: str = Field(min_length=5)  # Title must be at least 5 characters
+    description: str  # Description of the task
+    priority: TaskPriority  # Priority of the task (Enum)
+    due_date: datetime  # Due date for the task
 
 
+# Task output model, includes ID and status
 class TaskOut(TaskBase):
-    id: int
-    status: TaskStatus
-    model_config = ConfigDict(from_attributes=True)
+    id: int  # Task ID
+    status: TaskStatus  # Task status (Enum)
+    model_config = ConfigDict(from_attributes=True)  # Configure how the model works
 
 
+# Task list model, includes task counts
 class TaskListOut(TaskOut):
-    tasks_length: int
-    completed_task_length: int
+    tasks_length: int  # Total number of tasks
+    completed_task_length: int  # Number of completed tasks
 
 
+# Task update model, allows for optional updates to title, description, status, and due date
 class TaskUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     status: TaskStatus | None = None
     due_date: datetime | None = None
 
+    # Validate that status is either "pending" or "completed"
     @field_validator("status")
     def validate_status(cls, value: Any) -> Self:
-        if not (
-            value and (value == TaskStatus.pending or value == TaskStatus.completed)
-        ):
-            raise ValueError("Task status must be (pending, completed)")
-
+        if value not in [TaskStatus.pending, TaskStatus.completed]:
+            raise ValueError("Status must be 'pending' or 'completed'")
         return value
 
 
+# USER-RELATED SCHEMAS
+# Basic user model with fullname and email
 class UserBase(BaseModel):
-    fullname: str = Field(min_length=8)
-    email: EmailStr
+    fullname: str = Field(min_length=8)  # Fullname must be at least 8 characters
+    email: EmailStr  # Valid email address
 
 
+# User input model with password validation
 class UserIn(UserBase):
-    password: str
+    password: str  # User password
 
+    # Password validation (min length, uppercase, number, special char)
     @field_validator("password")
     def validate_password(cls, value: Any) -> Self:
         if len(value) < 8:
             raise ValueError("Password must be at least 8 characters long")
-
         if not re.search(r"[A-Z]", value):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"\d", value):
             raise ValueError("Password must contain at least one number")
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
             raise ValueError("Password must contain at least one special character")
-
         return value
 
 
+# User output model with is_active status
 class UserOut(UserBase):
-    is_active: bool
-    model_config = ConfigDict(from_attributes=True)
+    is_active: bool  # Whether the user is active or not
+    model_config = ConfigDict(from_attributes=True)  # Configure how the model works
 
 
+# User model with tasks, includes task details
 class UserWithTasks(UserOut):
-    tasks: list[TaskOut]
+    tasks: list[TaskOut]  # List of tasks associated with the user

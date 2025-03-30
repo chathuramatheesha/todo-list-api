@@ -5,17 +5,23 @@ from app.db.database import init_db
 from app.routers import task, auth
 
 
+# Async context manager to manage the lifespan of the FastAPI application
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-    await init_db()
-    yield
-    print("App is shutting dow...")
+    await init_db()  # Initialize the database connection on startup
+    yield  # Continue with the app's normal lifecycle
+    print("App is shutting down...")  # Print a message when the app is shutting down
 
 
-app = FastAPI(lifespan=lifespan)
+# FastAPI app instance with custom lifespan management
+app = FastAPI(lifespan=lifespan)  # Assign the custom lifespan to the app
 
+# Include routers for user authentication and task management
+# Register the auth router with the "User" tag
 app.include_router(auth.router, tags=["User"])
+# Register the task router with the "Task" tag and a "/tasks" prefix
 app.include_router(task.router, prefix="/tasks", tags=["Task"])
+
 
 # TODO - status(completed, pending, expired) -> Task model
 # TODO - due date reminder

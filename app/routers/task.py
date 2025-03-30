@@ -10,80 +10,125 @@ from app.core.enums import TaskPriority, TaskSortBy, TaskOrder, TaskStatus
 from app.routers.schemas import TaskBase, TaskOut, TaskUpdate, TaskListOut
 from app.crud.user_crud import get_current_user
 
+db_dependency: Annotated[AsyncSession, Depends(get_db)]
+user_dependency: Annotated[User, Depends(get_current_user)]
+
 router = APIRouter()
 
-# db_dependency: Annotated[AsyncSession, Depends(get_db)]
-# user_dependency: Annotated[User, Depends(get_current_user)]
 
-
+# POST /tasks
+# POST request to create a new task
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 async def create_task(
-    request: TaskBase,
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: AsyncSession = Depends(get_db),
+    request: TaskBase,  # The request body which contains the task details
+    current_user: Annotated[
+        User, Depends(get_current_user)
+    ],  # The current authenticated user, fetched from the dependency
+    db: Annotated[
+        AsyncSession, Depends(get_db)
+    ],  # The database session, fetched from the dependency
 ):
+    # Calling the CRUD function to create the task in the database
     return await crud.create_task(request, current_user, db)
 
 
+# GET /tasks
+# GET request to retrieve a list of tasks
 @router.get("", response_model=list[TaskOut])
 async def get_tasks(
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: AsyncSession = Depends(get_db),
-    search: str | None = Query(
+    current_user: Annotated[
+        User, Depends(get_current_user)
+    ],  # The current authenticated user, fetched from the dependency
+    db: Annotated[
+        AsyncSession, Depends(get_db)
+    ],  # The database session, fetched from the dependency
+    search: (
+        str | None
+    ) = Query(  # Optional search query to filter tasks by title or description
         None,
         description="Search for tasks by matching keywords in the title or description.",
     ),
-    filter_status: TaskStatus | None = Query(
+    filter_status: (
+        TaskStatus | None
+    ) = Query(  # Optional filter to get tasks by their status (pending, expired, completed)
         None,
         description="Filter by status (pending, expired, completed)",
     ),
-    filter_priority: TaskPriority | None = Query(
+    filter_priority: (
+        TaskPriority | None
+    ) = Query(  # Optional filter to get tasks by their priority (low, medium, high)
         None,
         description=f"Filter by priority ({', '.join(TaskPriority)})",
     ),
-    sort_by: TaskSortBy | None = Query(
+    sort_by: (
+        TaskSortBy | None
+    ) = Query(  # Optional filter to sort tasks by a specific field (status, priority, etc.)
         None,
         description=f"Sort by ({', '.join(TaskSortBy)})",
     ),
-    order: TaskOrder | None = Query(
+    order: (
+        TaskOrder | None
+    ) = Query(  # Optional parameter to specify the order (ascending or descending)
         None,
         description="Order by (asc, desc)",
     ),
 ):
+    # Calling the CRUD function to fetch the tasks with the applied filters and sorting options
     return await crud.get_tasks(
-        search=search,
-        filter_status=filter_status,
-        filter_priority=filter_priority,
-        sort_by=sort_by,
-        order=order,
-        user=current_user,
-        db=db,
+        search=search,  # Search term for filtering tasks by title or description
+        filter_status=filter_status,  # Status filter for filtering tasks
+        filter_priority=filter_priority,  # Priority filter for filtering tasks
+        sort_by=sort_by,  # Sorting field
+        order=order,  # Sorting order (asc or desc)
+        user=current_user,  # Current authenticated user
+        db=db,  # Database session
     )
 
 
+# GET /tasks/{task_id}
+# GET request to retrieve a specific task by its ID
 @router.get("/{task_id}", response_model=TaskOut)
 async def get_task(
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: AsyncSession = Depends(get_db),
-    task_id: int = Path(Ellipsis),
+    current_user: Annotated[
+        User, Depends(get_current_user)
+    ],  # The current authenticated user, fetched from the dependency
+    db: Annotated[
+        AsyncSession, Depends(get_db)
+    ],  # The database session, fetched from the dependency
+    task_id: int = Path(Ellipsis),  # Task ID provided as part of the URL path
 ):
+    # Calling the CRUD function to fetch the task by ID
     return await crud.get_task(task_id, current_user, db)
 
 
+# PATCH /tasks/{task_id}
+# PATCH request to update an existing task by its ID
 @router.patch("/{task_id}", response_model=TaskOut, status_code=status.HTTP_200_OK)
 async def update_task(
-    request: TaskUpdate,
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: AsyncSession = Depends(get_db),
-    task_id: int = Path(Ellipsis),
+    request: TaskUpdate,  # The task data to update, validated by the TaskUpdate model
+    current_user: Annotated[
+        User, Depends(get_current_user)
+    ],  # The current authenticated user, fetched from the dependency
+    db: Annotated[
+        AsyncSession, Depends(get_db)
+    ],  # The database session, fetched from the dependency
+    task_id: int = Path(Ellipsis),  # Task ID provided as part of the URL path
 ):
+    # Calling the CRUD function to update the task based on the task ID and input data
     return await crud.update_task(request, task_id, current_user, db)
 
 
+# DELETE /tasks/{task_id}
+# DELETE request to delete an existing task by its ID
 @router.delete("/{task_id}", status_code=status.HTTP_200_OK)
 async def delete_task(
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: AsyncSession = Depends(get_db),
-    task_id: int = Path(Ellipsis),
+    current_user: Annotated[
+        User, Depends(get_current_user)
+    ],  # The current authenticated user, fetched from the dependency
+    db: Annotated[
+        AsyncSession, Depends(get_db)
+    ],  # The database session, fetched from the dependency
+    task_id: int = Path(Ellipsis),  # Task ID provided as part of the URL path
 ):
+    # Calling the CRUD function to delete the task based on the task ID
     return await crud.delete_task(task_id, current_user, db)
