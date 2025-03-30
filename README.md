@@ -42,10 +42,11 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
    - Make sure to create a .env file with the following variables
    ```ini
    SECRET_KEY=<your_secret_key>
-   ALGORITHM=HS256
-   ACCESS_TOKEN_EXPIRE_MINUTES=30
+   ALGORITHM=<HS256,RS256,ES256> # default HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=<jwt_token_expire_timedelta>
    DATABASE_URL=<your_database_url> # mysql or sqlite (default sqlite) # I will update repo for postgres through new branch
-   DATABASE_ECHO=True 
+   DATABASE_ECHO=<True, False>
+   TASKS_EXPIRE_INTERVAL_HOURS=<interval_hours_to_update_expire_due_date>
    ```
 
 5. Run Fastapi Application:
