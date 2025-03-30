@@ -88,8 +88,8 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
 
 | Parameter          | Type       | Description                                             | Example                                      |
 |--------------------|------------|---------------------------------------------------------|----------------------------------------------|
-| `filter_status`    | string     | Filter tasks by their status (pending, completed).      | `status=pending`                            |
-| `filteer_priority` | string     | Filter tasks by their priority (low, medium, high).     | `priority=high`                             |
+| `filter_status`    | string     | Filter tasks by their status (pending, completed).      | `filter_status=pending`                            |
+| `filter_priority` | string     | Filter tasks by their priority (low, medium, high).     | `filter_priority=high`                             |
 | `page`             | integer    | The page number to paginate results. Defaults to 1.     | `page=2`                                    |
 | `page_size`        | integer    | The number of tasks per page. Defaults to 10.           | `page_size=20`                              |
 
