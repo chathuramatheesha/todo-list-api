@@ -4,7 +4,7 @@ from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Enum, Tex
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 
-from app.core.enums import TaskPriority
+from app.core.enums import TaskPriority, TaskStatus
 from app.db.database import Base
 
 
@@ -32,7 +32,7 @@ class User(Base):
 
     @property
     def completed_task_count(self):
-        return len([task for task in self.tasks if task.is_complete])
+        return len([task for task in self.tasks if task.status == TaskStatus.completed])
 
     @property
     def first_name(self) -> str:
@@ -48,7 +48,9 @@ class Task(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     priority: Mapped[enum.Enum] = mapped_column(Enum(TaskPriority), nullable=False)
-    is_complete: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    status: Mapped[enum.Enum] = mapped_column(
+        Enum(TaskStatus), nullable=False, default=TaskStatus.pending
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now(timezone.utc)
     )
@@ -57,4 +59,4 @@ class Task(Base):
     user: Mapped["User"] = relationship("User", back_populates="tasks")
 
     def __repr__(self):
-        return f"<Task(id={self.id}, title='{self.title}', is_complete={self.is_complete}, created_at={self.created_at}, due_date={self.due_date})>"
+        return f"<Task(id={self.id}, title='{self.title}', status={self.status}, created_at={self.created_at}, due_date={self.due_date})>"

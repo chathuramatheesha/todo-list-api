@@ -6,7 +6,7 @@ from typing import Annotated
 from app.crud import task_crud as crud
 from app.db.database import get_db
 from app.db.models import User
-from app.core.enums import TaskPriority, TaskSortBy, TaskOrder
+from app.core.enums import TaskPriority, TaskSortBy, TaskOrder, TaskStatus
 from app.routers.schemas import TaskBase, TaskOut, TaskUpdate, TaskListOut
 from app.crud.user_crud import get_current_user
 
@@ -33,9 +33,9 @@ async def get_tasks(
         None,
         description="Search for tasks by matching keywords in the title or description.",
     ),
-    filter_status: bool | None = Query(
+    filter_status: TaskStatus | None = Query(
         None,
-        description="Filter by status (true, false)",
+        description="Filter by status (pending, expired, completed)",
     ),
     filter_priority: TaskPriority | None = Query(
         None,
