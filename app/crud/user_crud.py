@@ -10,8 +10,8 @@ from typing import Annotated
 from app.db.database import get_db
 from app.db.models import User
 from app.routers.schemas import UserIn
-from app.security import Hash
-from app.config import config
+from app.core.security import Hash
+from app.core.config import config
 
 # OAuth2PasswordBearer is used to define the token URL for obtaining the OAuth2 password-based bearer token
 # It will automatically handle the validation of the token

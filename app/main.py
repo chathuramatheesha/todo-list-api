@@ -1,6 +1,7 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
+from app.services.background_tasks import schedular
 from app.db.database import init_db
 from app.routers import task, auth
 
@@ -9,6 +10,7 @@ from app.routers import task, auth
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
     await init_db()  # Initialize the database connection on startup
+    schedular.start()
     yield  # Continue with the app's normal lifecycle
     print("App is shutting down...")  # Print a message when the app is shutting down
 
@@ -23,5 +25,4 @@ app.include_router(auth.router, tags=["User"])
 app.include_router(task.router, prefix="/tasks", tags=["Task"])
 
 
-# TODO - status(completed, pending, expired) -> Task model
 # TODO - due date reminder

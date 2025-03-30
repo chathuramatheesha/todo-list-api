@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
 
-from app.config import config
+from app.core.config import config
 
 
 # The Base class is used to define the base for all of your models.
