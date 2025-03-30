@@ -38,8 +38,17 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
    ```bash
    pip install -r requirements.txt
    ```
+4. Add environment variables
+   - Make sure to create a .env file with the following variables
+   ```ini
+   SECRET_KEY=<your_secret_key>
+   ALGORITHM=HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=30
+   DATABASE_URL=<your_database_url> # mysql or sqlite (default sqlite) # I will update repo for postgres through new branch
+   DATABASE_ECHO=True 
+   ```
 
-4. Run Fastapi Application:
+5. Run Fastapi Application:
    ```bash
    uvicorn app.main:app
    ```
@@ -73,25 +82,50 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
 ## 2. **Get Tasks**
 
 **GET** `/tasks`
+- **Description**: Fetches a list of tasks for the authenticated user. You can filter tasks based on query parameters such as `status`, `priority`, and `due_date`.
+
+#### Query Parameters:
+
+| Parameter   | Type       | Description                                             | Example                                      |
+|-------------|------------|---------------------------------------------------------|----------------------------------------------|
+| `status`    | string     | Filter tasks by their status (pending, completed).      | `status=pending`                            |
+| `priority`  | string     | Filter tasks by their priority (low, medium, high).     | `priority=high`                             |
+| `due_date`  | string     | Filter tasks by due date (in `YYYY-MM-DD` format).     | `due_date=2025-04-01`                        |
+| `page`      | integer    | The page number to paginate results. Defaults to 1.     | `page=2`                                    |
+| `page_size` | integer    | The number of tasks per page. Defaults to 10.           | `page_size=20`                              |
+
+#### Example Request:
+
+```bash
+GET /tasks?status=pending&priority=high&due_date=2025-04-01&page=1&page_size=10
+```
 
 ### Response Body
 ```json
-[
-  {
-    "title": "string",
-    "description": "string",
-    "due_date": "2025-03-28T07:13:17.896000",
-    "id": 2,
-    "is_complete": false
-  },
-  {
-    "title": "string",
-    "description": "string",
-    "due_date": "2025-03-28T07:13:17.896000",
-    "id": 3,
-    "is_complete": false
-  }
-]
+{
+  "page_number": 1,
+  "page_size": 2,
+  "total_items": 4,
+  "total_pages": 2,
+  "tasks": [
+    {
+      "title": "Test Title",
+      "description": "Test desc",
+      "priority": "medium",
+      "due_date": "2025-04-30T08:45:02.790000",
+      "id": 1,
+      "status": "pending"
+    },
+    {
+      "title": "test tititl",
+      "description": "string",
+      "priority": "low",
+      "due_date": "2025-03-30T10:18:13.613000",
+      "id": 4,
+      "status": "pending"
+    }
+  ]
+}
 ```
 
 ## 3. **Get Task**

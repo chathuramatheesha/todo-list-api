@@ -8,6 +8,13 @@ from app.core.enums import TaskStatus
 from app.db.models import TaskPriority
 
 
+class PaginationBase(BaseModel):
+    page_number: int
+    page_size: int
+    total_items: int
+    total_pages: int
+
+
 # TASK-BASED SCHEMAS
 # Basic task model with title, description, priority, and due date
 class TaskBase(BaseModel):
@@ -25,9 +32,8 @@ class TaskOut(TaskBase):
 
 
 # Task list model, includes task counts
-class TaskListOut(TaskOut):
-    tasks_length: int  # Total number of tasks
-    completed_task_length: int  # Number of completed tasks
+class TaskListOut(PaginationBase):
+    tasks: list[TaskOut]
 
 
 # Task update model, allows for optional updates to title, description, status, and due date

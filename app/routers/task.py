@@ -34,7 +34,7 @@ async def create_task(
 
 # GET /tasks
 # GET request to retrieve a list of tasks
-@router.get("", response_model=list[TaskOut])
+@router.get("", response_model=TaskListOut)
 async def get_tasks(
     current_user: Annotated[
         User, Depends(get_current_user)
@@ -72,6 +72,8 @@ async def get_tasks(
         None,
         description="Order by (asc, desc)",
     ),
+    page_number: int = 1,  # The page number to return (default is 1) (Optional)
+    page_size: int = 10,  # The number of tasks to return per page (default is 10) (Optional)
 ):
     # Calling the CRUD function to fetch the tasks with the applied filters and sorting options
     return await crud.get_tasks(
@@ -80,6 +82,8 @@ async def get_tasks(
         filter_priority=filter_priority,  # Priority filter for filtering tasks
         sort_by=sort_by,  # Sorting field
         order=order,  # Sorting order (asc or desc)
+        page_number=page_number,  # Page number
+        page_size=page_size,  # Page size (tasks limit)
         user=current_user,  # Current authenticated user
         db=db,  # Database session
     )

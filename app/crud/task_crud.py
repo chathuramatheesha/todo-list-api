@@ -1,11 +1,17 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import insert, select, update, delete, asc, case, desc
+from sqlalchemy import insert, select, update, delete, asc, case, desc, func
 from typing import Sequence
 
 from app.db.models import Task, User
 from app.core.enums import TaskPriority, TaskSortBy, TaskOrder, TaskStatus
-from app.routers.schemas import TaskBase, TaskUpdate
+from app.routers.schemas import (
+    TaskBase,
+    TaskUpdate,
+    PaginationBase,
+    TaskOut,
+    TaskListOut,
+)
 
 
 # * GET A TASK by task.id
@@ -44,7 +50,9 @@ async def get_tasks(
     order: TaskOrder,  # Sorting order (ascending or descending)
     user: User,  # User object to filter tasks by the requesting user's ID
     db: AsyncSession,  # Database session for querying tasks
-) -> Sequence[Task]:
+    page_number: int = 1,  # Page number for pagination (default to 1)
+    page_size: int = 10,  # Page size for pagination (default to 10)
+) -> TaskListOut:
     # Initialize the query, selecting tasks where the user_id matches the requesting user's ID
     query = select(Task).where(Task.user_id == user.id)
 
@@ -103,6 +111,15 @@ async def get_tasks(
     # Apply the sorting to the query, passing multiple fields if necessary
     query = query.order_by(order_func(*sort_fields))
 
+    # Calculate the offset based on the page_number and page_size
+    # The offset determines how many tasks to skip before returning the results
+    # For example, if page_number = 2 and page_size = 10, the offset will be (2-1) * 10 = 10
+    offset = (page_number - 1) * page_size
+
+    # Apply the offset and limit to the query
+    # The offset skips the specified number of tasks, and the limit restricts the number of tasks returned
+    query = query.offset(offset).limit(page_size)
+
     # Execute the query and fetch the results
     result = await db.scalars(query)
     tasks = result.all()
@@ -114,8 +131,24 @@ async def get_tasks(
             detail="Task selection failed: No tasks found",
         )
 
-    # Return the tasks if found
-    return tasks
+    # Count the total number of tasks for pagination
+    total_tasks_query = select(func.count(Task.id)).where(Task.user_id == user.id)
+    total_tasks = await db.scalar(total_tasks_query)
+
+    # Calculate total pages
+    total_pages = (total_tasks // page_size) + (1 if total_tasks % page_size > 0 else 0)
+
+    # Convert ORM objects to Pydantic models using the dictionary unpacking method
+    task_out_list = [TaskOut(**task.__dict__) for task in tasks]
+
+    # Return the tasks along with the pagination info
+    return TaskListOut(
+        page_number=page_number,
+        page_size=page_size,
+        total_items=total_tasks,
+        total_pages=total_pages,
+        tasks=task_out_list,
+    )
 
 
 # * CREATE A TASK
