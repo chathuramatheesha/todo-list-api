@@ -86,18 +86,17 @@ A simple and efficient RESTful API for managing tasks in a Todo list application
 
 #### Query Parameters:
 
-| Parameter   | Type       | Description                                             | Example                                      |
-|-------------|------------|---------------------------------------------------------|----------------------------------------------|
-| `status`    | string     | Filter tasks by their status (pending, completed).      | `status=pending`                            |
-| `priority`  | string     | Filter tasks by their priority (low, medium, high).     | `priority=high`                             |
-| `due_date`  | string     | Filter tasks by due date (in `YYYY-MM-DD` format).     | `due_date=2025-04-01`                        |
-| `page`      | integer    | The page number to paginate results. Defaults to 1.     | `page=2`                                    |
-| `page_size` | integer    | The number of tasks per page. Defaults to 10.           | `page_size=20`                              |
+| Parameter          | Type       | Description                                             | Example                                      |
+|--------------------|------------|---------------------------------------------------------|----------------------------------------------|
+| `filter_status`    | string     | Filter tasks by their status (pending, completed).      | `status=pending`                            |
+| `filteer_priority` | string     | Filter tasks by their priority (low, medium, high).     | `priority=high`                             |
+| `page`             | integer    | The page number to paginate results. Defaults to 1.     | `page=2`                                    |
+| `page_size`        | integer    | The number of tasks per page. Defaults to 10.           | `page_size=20`                              |
 
 #### Example Request:
 
 ```bash
-GET /tasks?status=pending&priority=high&due_date=2025-04-01&page=1&page_size=10
+GET /tasks?filter_status=pending&filter_priority=high&due_date=2025-04-01&page=1&page_size=10
 ```
 
 ### Response Body
