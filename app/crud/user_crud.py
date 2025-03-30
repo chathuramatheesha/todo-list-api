@@ -9,7 +9,7 @@ from typing import Annotated
 
 from app.db.database import get_db
 from app.db.models import User
-from app.routers.schemas import UserIn
+from app.schemas.user_schema import UserIn
 from app.core.security import Hash
 from app.core.config import config
 

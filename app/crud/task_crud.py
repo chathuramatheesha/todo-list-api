@@ -4,10 +4,9 @@ from sqlalchemy import insert, select, update, delete, asc, case, desc, func
 
 from app.db.models import Task, User
 from app.core.enums import TaskPriority, TaskSortBy, TaskOrder, TaskStatus
-from app.routers.schemas import (
+from app.schemas.task_schema import (
     TaskBase,
     TaskUpdate,
-    PaginationBase,
     TaskOut,
     TaskListOut,
 )
