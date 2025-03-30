@@ -20,7 +20,10 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(60), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     tasks: Mapped[list["Task"]] = relationship(
-        "Task", back_populates="user", lazy="selectin"
+        "Task",
+        back_populates="user",
+        lazy="selectin",
+        cascade="all, delete-orphan",
     )
 
     @property

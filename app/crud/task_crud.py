@@ -2,7 +2,6 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete, asc, case, desc
 from typing import Sequence
-from datetime import datetime, timezone
 
 from app.db.models import Task, User
 from app.core.enums import TaskPriority, TaskSortBy, TaskOrder

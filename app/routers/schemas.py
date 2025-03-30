@@ -1,13 +1,14 @@
-from fastapi import HTTPException, status
-from pydantic import BaseModel, ConfigDict, GetCoreSchemaHandler
-from pydantic_core import CoreSchema
-from datetime import datetime, timezone
+import re
+from typing import Any, Self
+
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator, Field
+from datetime import datetime
 
 from app.db.models import TaskPriority
 
 
 class TaskBase(BaseModel):
-    title: str
+    title: str = Field(min_length=5)
     description: str
     priority: TaskPriority
     due_date: datetime
@@ -32,12 +33,26 @@ class TaskUpdate(BaseModel):
 
 
 class UserBase(BaseModel):
-    fullname: str
-    email: str
+    fullname: str = Field(min_length=8)
+    email: EmailStr
 
 
 class UserIn(UserBase):
     password: str
+
+    @field_validator("password")
+    def validate(cls, value: Any) -> Self:
+        if len(value) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"\d", value):
+            raise ValueError("Password must contain at least one number")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
+            raise ValueError("Password must contain at least one special character")
+
+        return value
 
 
 class UserOut(UserBase):
